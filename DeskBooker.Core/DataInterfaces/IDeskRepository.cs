@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DeskBooker.Core.Domain;
 
 public interface IDeskRepository
 {
-    List<Desk> GetAvailableDesks(DateTime date);
+    Task<List<Desk>> GetAvailableDesks(DateTime date);
 }

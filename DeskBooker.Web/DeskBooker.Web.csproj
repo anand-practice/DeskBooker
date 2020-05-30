@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Deskbooker.Data\DeskBooker.Data.csproj" />
+    <ProjectReference Include="..\DeskBooker.Core\DeskBooker.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

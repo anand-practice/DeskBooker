@@ -1,3 +1,4 @@
+using DeskBooker.Core.Processor;
 using DeskBooker.Data.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,11 +21,17 @@ namespace DeskBooker.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            // services.AddControllersWithViews();
+            services.AddRazorPages();
             services.AddDbContext<DataContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DeskBookerContext")));
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+            services.AddTransient<IDeskRepository, DeskRepository>();
+            services.AddTransient<IDeskBookingRepository, DeskBookingRepository>();
+            services.AddTransient<IDeskBookingRequestProcessor, DeskBookingRequestProcessor>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -48,9 +55,11 @@ namespace DeskBooker.Web
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                // endpoints.MapControllerRoute(
+                //     name: "default",
+                //     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapRazorPages();
             });
         }
     }

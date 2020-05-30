@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using DeskBooker.Core.Domain;
 
 namespace DeskBooker.Core.Processor
 {
-    public class DeskBookingRequestProcessor
+    public class DeskBookingRequestProcessor : IDeskBookingRequestProcessor
     {
         private IDeskBookingRepository _deskBookingRepository;
         private IDeskRepository _deskRepository;
@@ -16,10 +17,10 @@ namespace DeskBooker.Core.Processor
             _deskRepository = deskRepository;
         }
 
-        public DeskBookingResponse BookDesk(DeskBookingRequest request)
+        public async Task<DeskBookingResponse> BookDeskAsync(DeskBookingRequest request)
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
-            var desks = _deskRepository.GetAvailableDesks(request.Date);
+            var desks = await _deskRepository.GetAvailableDesks(request.Date);
             DeskBookingResponse response = Create<DeskBookingResponse>(request);
             if (desks.FirstOrDefault() is Desk availableDesks)
             {

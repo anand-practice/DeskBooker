@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DeskBooker.Core.Domain;
 using DeskBooker.Core.Processor;
 using Moq;
@@ -28,16 +29,14 @@ public class DeskBookingRequestProcessorTests
         _deskBookingMock = new Mock<IDeskBookingRepository>();
         _deskRepositoryMock = new Mock<IDeskRepository>();
         _deskRepositoryMock.Setup(x => x.GetAvailableDesks(It.IsAny<DateTime>()))
-       .Returns(_desks);
+       .ReturnsAsync(_desks);
 
         _processor = new DeskBookingRequestProcessor(_deskBookingMock.Object, _deskRepositoryMock.Object);
     }
     [Test]
-    public void should_return_values_on_booking_request()
+    public async Task should_return_values_on_booking_requestAsync()
     {
-
-
-        DeskBookingResponse response = _processor.BookDesk(_request);
+        var response = await _processor.BookDeskAsync(_request);
         Assert.IsNotNull(response);
         Assert.AreEqual(_request.FirstName, response.FirstName);
         Assert.AreEqual(_request.LastName, response.LastName);
@@ -48,19 +47,19 @@ public class DeskBookingRequestProcessorTests
     [Test]
     public void should_throw_exception_on_null_input()
     {
-        var exception = Assert.Throws<ArgumentNullException>(() => _processor.BookDesk(null));
+        var exception = Assert.ThrowsAsync<ArgumentNullException>(async () => await _processor.BookDeskAsync(null));
         Assert.AreEqual("request", exception.ParamName);
     }
 
     [Test]
-    public void should_save_desk_booking()
+    public async Task should_save_desk_bookingAsync()
     {
         DeskBooking savedBooking = null;
         _deskBookingMock.Setup(x => x.Save(It.IsAny<DeskBooking>())).Callback<DeskBooking>(deskBooking =>
         {
             savedBooking = deskBooking;
         });
-        _processor.BookDesk(_request);
+        await _processor.BookDeskAsync(_request);
         _deskBookingMock.Verify(x => x.Save(It.IsAny<DeskBooking>()), Times.Once);
         Assert.IsNotNull(savedBooking);
         Assert.AreEqual(_request.FirstName, savedBooking.FirstName);
@@ -68,33 +67,32 @@ public class DeskBookingRequestProcessorTests
         Assert.AreEqual(_request.Email, savedBooking.Email);
         Assert.AreEqual(_request.Phone, savedBooking.Phone);
         Assert.AreEqual(_desks.First().Id, savedBooking.DeskId);
-
     }
 
     [Test]
-    public void should_not_save_if_unavailable()
+    public async Task should_not_save_if_unavailableAsync()
     {
         _desks.Clear();
-        _processor.BookDesk(_request);
+        await _processor.BookDeskAsync(_request);
         _deskRepositoryMock.Verify(x => x.GetAvailableDesks(It.IsAny<DateTime>()), Times.Once);
         _deskBookingMock.Verify(x => x.Save(It.IsAny<DeskBooking>()), Times.Never);
     }
 
     [TestCase(DeskBookingResultCode.NotAvailable, false)]
     [TestCase(DeskBookingResultCode.Available, true)]
-    public void should_return_result_code(DeskBookingResultCode expectedResultCode, bool deskAvailable)
+    public async Task should_return_result_code(DeskBookingResultCode expectedResultCode, bool deskAvailable)
     {
         if (!deskAvailable)
         {
             _desks.Clear();
         }
-        var result = _processor.BookDesk(_request);
+        var result = await _processor.BookDeskAsync(_request);
         Assert.AreEqual(expectedResultCode, result.ResultCode);
     }
 
     [TestCase(null, false)]
     [TestCase(1, true)]
-    public void should_return_expected_booking_id(int? expectedId, bool deskAvailable)
+    public async Task should_return_expected_booking_id(int? expectedId, bool deskAvailable)
     {
         if (!deskAvailable)
         {
@@ -108,7 +106,7 @@ public class DeskBookingRequestProcessorTests
                 deskBooking.Id = expectedId.Value;
             });
         }
-        var result = _processor.BookDesk(_request);
+        var result = await _processor.BookDeskAsync(_request);
         Assert.AreEqual(expectedId, result.DeskBookingId);
     }
 }
