@@ -1,1 +1,6 @@
-<h1>Booking Confirmed</h1>
+@page
+@model DeskBooker.Web.Pages.BookDeskConfirmationModel
+@{
+  ViewData["Title"] = "Book Desk Confirmation";
+}
+Your booking number is <strong>@Model.DeskBookingId</strong>
